@@ -5,11 +5,11 @@ import type { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import { AuthKitProvider } from '@farcaster/auth-kit';
 import { MiniAppProvider } from '@neynar/react';
-import { SafeFarcasterSolanaProvider } from '~/components/providers/SafeFarcasterSolanaProvider';
-import { ANALYTICS_ENABLED, RETURN_URL } from '~/lib/constants';
+import { SafeFarcasterSolanaProvider } from '@/components/providers/SafeFarcasterSolanaProvider';
+import { ANALYTICS_ENABLED, RETURN_URL } from '@/lib/constants';
 
 const WagmiProvider = dynamic(
-  () => import('~/components/providers/WagmiProvider'),
+  () => import('@/components/providers/WagmiProvider'),
   {
     ssr: false,
   }

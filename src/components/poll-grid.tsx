@@ -31,7 +31,7 @@ export function PollGrid() {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="border-4 border-black bg-cyan-300 px-8 py-4 font-mono text-xl font-bold uppercase">
+        <div className="border-4 border-black bg-cyan-300 px-8 py-4 font-mono text-xl font-bold uppercase text-black">
           Loading Polls...
         </div>
       </div>
@@ -41,10 +41,10 @@ export function PollGrid() {
   if (polls.length === 0) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-        <div className="border-4 border-black bg-pink-300 px-8 py-6 font-mono text-2xl font-black uppercase">
+        <div className="border-4 border-black bg-pink-300 px-8 py-6 font-mono text-2xl font-black uppercase text-black">
           No Polls Yet
         </div>
-        <p className="font-mono text-lg font-bold">Be the first to create one!</p>
+        <p className="font-mono text-lg font-bold text-black">Be the first to create one!</p>
       </div>
     )
   }
@@ -56,18 +56,18 @@ export function PollGrid() {
           key={poll.id}
           className="border-4 border-black bg-white p-6 transition-transform hover:translate-x-1 hover:translate-y-1"
         >
-          <h2 className="mb-4 font-mono text-xl font-black uppercase leading-tight">{poll.question}</h2>
+          <h2 className="mb-4 font-mono text-xl font-black uppercase leading-tight text-black">{poll.question}</h2>
           <div className="mb-4 flex items-center gap-2">
-            <span className="border-2 border-black bg-gray-200 px-2 py-1 font-mono text-sm font-bold">
+            <span className="border-2 border-black bg-gray-200 px-2 py-1 font-mono text-sm font-bold text-black">
               @fid{poll.creatorFid}
             </span>
-            <span className="border-2 border-black bg-orange-300 px-2 py-1 font-mono text-sm font-bold">
+            <span className="border-2 border-black bg-orange-300 px-2 py-1 font-mono text-sm font-bold text-black">
               {poll.totalVotes} votes
             </span>
           </div>
           <Link
             href={`/poll/${poll.id}`}
-            className="block border-4 border-black bg-cyan-400 px-4 py-3 text-center font-mono font-black uppercase transition-all hover:bg-cyan-300"
+            className="block border-4 border-black bg-cyan-400 px-4 py-3 text-center font-mono font-black uppercase transition-all hover:bg-cyan-300 text-black"
           >
             View Poll
           </Link>

@@ -1,76 +1,96 @@
 import { NextResponse } from "next/server"
-
-// Mock data for now - will be replaced with database
-const mockPolls = [
-  {
-    id: "1",
-    question: "What is your favorite programming language?",
-    creatorFid: "1234",
-    totalVotes: 42,
-    createdAt: new Date().toISOString(),
-    options: [
-      { id: "1", text: "TypeScript", votes: 15 },
-      { id: "2", text: "Python", votes: 12 },
-      { id: "3", text: "Rust", votes: 10 },
-      { id: "4", text: "Go", votes: 5 },
-    ],
-  },
-  {
-    id: "2",
-    question: "Best time to code?",
-    creatorFid: "5678",
-    totalVotes: 28,
-    createdAt: new Date().toISOString(),
-    options: [
-      { id: "1", text: "Morning", votes: 8 },
-      { id: "2", text: "Afternoon", votes: 5 },
-      { id: "3", text: "Evening", votes: 7 },
-      { id: "4", text: "Night", votes: 8 },
-    ],
-  },
-  {
-    id: "3",
-    question: "Favorite web framework?",
-    creatorFid: "9012",
-    totalVotes: 35,
-    createdAt: new Date().toISOString(),
-    options: [
-      { id: "1", text: "Next.js", votes: 20 },
-      { id: "2", text: "React", votes: 10 },
-      { id: "3", text: "Vue", votes: 3 },
-      { id: "4", text: "Svelte", votes: 2 },
-    ],
-  },
-]
+import connectToDatabase from "@/lib/mongodb"
+import { Poll, User } from "@/models"
 
 export async function GET() {
-  return NextResponse.json({ polls: mockPolls })
+  try {
+    await connectToDatabase()
+    
+    // Fetch all polls, sorted by creation date (newest first)
+    const polls = await Poll.find({})
+      .sort({ createdAt: -1 })
+      .limit(50) // Limit to 50 most recent polls
+      .lean()
+    
+    // Transform the data to match the expected format
+    const transformedPolls = polls.map(poll => ({
+      id: poll._id.toString(),
+      question: poll.question,
+      creatorFid: poll.creatorFid,
+      totalVotes: poll.totalVotes,
+      createdAt: poll.createdAt.toISOString(),
+      options: poll.options
+    }))
+
+    return NextResponse.json({ polls: transformedPolls })
+  } catch (error) {
+    console.error("Error fetching polls:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch polls" }, 
+      { status: 500 }
+    )
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { question, options, fid } = body
+  try {
+    await connectToDatabase()
+    
+    const body = await request.json()
+    const { question, options, fid } = body
 
-  // Validate input
-  if (!question || !options || options.length < 2 || options.length > 4) {
-    return NextResponse.json({ error: "Invalid poll data" }, { status: 400 })
-  }
+    // Validate input
+    if (!question || !options || options.length < 2 || options.length > 4) {
+      return NextResponse.json({ error: "Invalid poll data" }, { status: 400 })
+    }
 
-  // Create new poll
-  const newPoll = {
-    id: String(mockPolls.length + 1),
-    question,
-    creatorFid: fid || "0000",
-    totalVotes: 0,
-    createdAt: new Date().toISOString(),
-    options: options.map((text: string, index: number) => ({
-      id: String(index + 1),
-      text,
+    if (!fid) {
+      return NextResponse.json({ error: "User FID is required" }, { status: 400 })
+    }
+
+    // Create poll options with proper structure
+    const pollOptions = options.map((text: string, index: number) => ({
+      id: (index + 1).toString(),
+      text: text.trim(),
       votes: 0,
-    })),
+    }))
+
+    // Create new poll
+    const newPoll = new Poll({
+      question: question.trim(),
+      creatorFid: fid,
+      options: pollOptions,
+      totalVotes: 0,
+    })
+
+    await newPoll.save()
+
+    // Update or create user record
+    await User.findOneAndUpdate(
+      { fid },
+      { 
+        $inc: { pollsCreated: 1 },
+        $set: { lastActive: new Date() }
+      },
+      { upsert: true, new: true }
+    )
+
+    // Transform the response to match expected format
+    const responseData = {
+      id: newPoll._id.toString(),
+      question: newPoll.question,
+      creatorFid: newPoll.creatorFid,
+      totalVotes: newPoll.totalVotes,
+      createdAt: newPoll.createdAt.toISOString(),
+      options: newPoll.options,
+    }
+
+    return NextResponse.json({ poll: responseData }, { status: 201 })
+  } catch (error) {
+    console.error("Error creating poll:", error)
+    return NextResponse.json(
+      { error: "Failed to create poll" }, 
+      { status: 500 }
+    )
   }
-
-  mockPolls.push(newPoll)
-
-  return NextResponse.json({ poll: newPoll }, { status: 201 })
 }

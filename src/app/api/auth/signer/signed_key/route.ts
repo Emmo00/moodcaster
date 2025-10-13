@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getNeynarClient } from '~/lib/neynar';
+import { getNeynarClient } from '@/lib/neynar';
 import { mnemonicToAccount } from 'viem/accounts';
 import {
   SIGNED_KEY_REQUEST_TYPE,
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
-} from '~/lib/constants';
+} from '@/lib/constants';
 
 const postRequiredFields = ['signerUuid', 'publicKey'];
 
