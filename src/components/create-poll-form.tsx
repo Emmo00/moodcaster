@@ -88,7 +88,7 @@ export function CreatePollForm() {
         <div className="mx-auto max-w-2xl">
           <Link
             href="/"
-            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1"
+            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
           >
             ← Back
           </Link>
@@ -98,15 +98,15 @@ export function CreatePollForm() {
       {/* Main Content */}
       <main className="mx-auto max-w-2xl px-4 py-12">
         <div className="mb-8 border-4 border-black bg-orange-300 p-8">
-          <h1 className="font-mono text-3xl font-black uppercase">Create New Poll</h1>
+          <h1 className="font-mono text-3xl font-black uppercase text-black">Create New Poll</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Question Input */}
           <div>
-            <label className="mb-3 block font-mono text-lg font-bold uppercase">
+            <label className="mb-3 block font-mono text-lg font-bold uppercase text-black">
               Poll Question
-              <span className="ml-2 text-sm">({question.length}/120)</span>
+              <span className="ml-2 text-sm text-black">({question.length}/120)</span>
             </label>
             <input
               type="text"
@@ -114,13 +114,13 @@ export function CreatePollForm() {
               onChange={(e) => setQuestion(e.target.value)}
               maxLength={120}
               placeholder="What's your question?"
-              className="w-full border-4 border-black bg-white px-4 py-4 font-mono text-lg font-bold uppercase placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-black"
+              className="w-full border-4 border-black bg-white px-4 py-4 font-mono text-lg font-bold uppercase placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-black text-black"
             />
           </div>
 
           {/* Options */}
           <div>
-            <label className="mb-3 block font-mono text-lg font-bold uppercase">Options</label>
+            <label className="mb-3 block font-mono text-lg font-bold uppercase text-black">Options</label>
             <div className="space-y-4">
               {options.map((option, index) => (
                 <div key={index} className="flex gap-2">
@@ -131,13 +131,13 @@ export function CreatePollForm() {
                     placeholder={`Option ${index + 1}`}
                     className={`flex-1 border-4 border-black ${
                       colors[index % colors.length]
-                    } px-4 py-4 font-mono text-lg font-bold uppercase placeholder:text-gray-600 focus:outline-none focus:ring-4 focus:ring-black`}
+                    } px-4 py-4 font-mono text-lg font-bold uppercase placeholder:text-gray-600 focus:outline-none focus:ring-4 focus:ring-black text-black`}
                   />
                   {options.length > 2 && (
                     <button
                       type="button"
                       onClick={() => removeOption(index)}
-                      className="border-4 border-black bg-red-400 px-4 font-mono text-xl font-black uppercase transition-transform hover:translate-x-1 hover:translate-y-1"
+                      className="border-4 border-black bg-red-400 px-4 font-mono text-xl font-black uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
                     >
                       ✕
                     </button>
@@ -150,7 +150,7 @@ export function CreatePollForm() {
               <button
                 type="button"
                 onClick={addOption}
-                className="mt-4 border-4 border-black bg-gray-200 px-6 py-3 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1"
+                className="mt-4 border-4 border-black bg-gray-200 px-6 py-3 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
               >
                 + Add Option
               </button>
@@ -168,7 +168,7 @@ export function CreatePollForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full border-4 border-black bg-lime-400 px-8 py-6 font-mono text-2xl font-black uppercase shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+            className="w-full border-4 border-black bg-lime-400 px-8 py-6 font-mono text-2xl font-black uppercase shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-black"
           >
             {loading ? "Creating..." : "Create Poll"}
           </button>

@@ -37,9 +37,21 @@
 }
 
 body {
-  color: var(--foreground);
+  color: #000000 !important;
   background: var(--background);
   font-family: 'Inter', Helvetica, Arial, sans-serif;
+}
+
+/* Force all text elements to be black */
+*, *::before, *::after {
+  color: #000000 !important;
+}
+
+/* Ensure text remains black even in dark mode */
+@media (prefers-color-scheme: dark) {
+  *, *::before, *::after {
+    color: #000000 !important;
+  }
 }
 
 * {

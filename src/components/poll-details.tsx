@@ -67,7 +67,7 @@ export function PollDetails({ pollId }: { pollId: string }) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="border-4 border-black bg-cyan-300 px-8 py-4 font-mono text-xl font-bold uppercase">
+        <div className="border-4 border-black bg-cyan-300 px-8 py-4 font-mono text-xl font-bold uppercase text-black">
           Loading Poll...
         </div>
       </div>
@@ -77,12 +77,12 @@ export function PollDetails({ pollId }: { pollId: string }) {
   if (!poll) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white">
-        <div className="border-4 border-black bg-pink-300 px-8 py-6 font-mono text-2xl font-black uppercase">
+        <div className="border-4 border-black bg-pink-300 px-8 py-6 font-mono text-2xl font-black uppercase text-black">
           Poll Not Found
         </div>
         <Link
           href="/"
-          className="border-4 border-black bg-lime-400 px-6 py-3 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1"
+          className="border-4 border-black bg-lime-400 px-6 py-3 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
         >
           ← Back Home
         </Link>
@@ -99,7 +99,7 @@ export function PollDetails({ pollId }: { pollId: string }) {
         <div className="mx-auto max-w-3xl">
           <Link
             href="/"
-            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1"
+            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
           >
             ← Back
           </Link>
@@ -112,10 +112,10 @@ export function PollDetails({ pollId }: { pollId: string }) {
         <div className="mb-8 border-4 border-black bg-orange-300 p-8">
           <h1 className="font-mono text-3xl font-black uppercase leading-tight text-black">{poll.question}</h1>
           <div className="mt-4 flex items-center gap-2">
-            <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold">
+            <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold text-black">
               @fid{poll.creatorFid}
             </span>
-            <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold">
+            <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold text-black">
               {poll.totalVotes} total votes
             </span>
           </div>
@@ -124,13 +124,13 @@ export function PollDetails({ pollId }: { pollId: string }) {
         {/* Voting Options */}
         {!hasVoted && (
           <div className="mb-12 space-y-4">
-            <h2 className="mb-4 font-mono text-xl font-black uppercase">Cast Your Vote:</h2>
+            <h2 className="mb-4 font-mono text-xl font-black uppercase text-black">Cast Your Vote:</h2>
             {poll.options.map((option, index) => (
               <button
                 key={option.id}
                 onClick={() => handleVote(option.id)}
                 disabled={voting}
-                className={`w-full border-4 border-black ${colors[index % colors.length]} p-6 text-left font-mono text-xl font-black uppercase transition-all hover:translate-x-2 hover:translate-y-2 disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0`}
+                className={`w-full border-4 border-black ${colors[index % colors.length]} p-6 text-left font-mono text-xl font-black uppercase transition-all hover:translate-x-2 hover:translate-y-2 disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 text-black`}
               >
                 {option.text}
               </button>
@@ -140,15 +140,15 @@ export function PollDetails({ pollId }: { pollId: string }) {
 
         {/* Results */}
         <div className="space-y-6">
-          <h2 className="font-mono text-2xl font-black uppercase">Results:</h2>
+          <h2 className="font-mono text-2xl font-black uppercase text-black">Results:</h2>
           {poll.options.map((option, index) => {
             const percentage = poll.totalVotes > 0 ? Math.round((option.votes / poll.totalVotes) * 100) : 0
 
             return (
               <div key={option.id} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-lg font-bold uppercase">{option.text}</span>
-                  <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold">
+                  <span className="font-mono text-lg font-bold uppercase text-black">{option.text}</span>
+                  <span className="border-2 border-black bg-white px-3 py-1 font-mono text-sm font-bold text-black">
                     {option.votes} votes
                   </span>
                 </div>
@@ -157,7 +157,7 @@ export function PollDetails({ pollId }: { pollId: string }) {
                     className={`border-r-4 border-black ${colors[index % colors.length]} py-4 transition-all duration-500`}
                     style={{ width: `${percentage}%` }}
                   >
-                    <span className="ml-4 font-mono text-lg font-black">{percentage}%</span>
+                    <span className="ml-4 font-mono text-lg font-black text-black">{percentage}%</span>
                   </div>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export function PollDetails({ pollId }: { pollId: string }) {
 
         {hasVoted && (
           <div className="mt-8 border-4 border-black bg-lime-300 p-6 text-center">
-            <p className="font-mono text-xl font-black uppercase">Vote Recorded!</p>
+            <p className="font-mono text-xl font-black uppercase text-black">Vote Recorded!</p>
           </div>
         )}
       </main>
