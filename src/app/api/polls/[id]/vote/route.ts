@@ -2,13 +2,51 @@ import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import { Poll, Vote, User } from "@/models";
 import mongoose from "mongoose";
+import { createClient, Errors } from '@farcaster/quick-auth';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+const client = createClient();
+
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase();
     
+    // Get and verify the authentication token
+    const authorization = request.headers.get('Authorization');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 });
+    }
+
+    const token = authorization.split(' ')[1];
+    
+    // Get domain from environment or request
+    const domain = process.env.NEXT_PUBLIC_URL
+      ? new URL(process.env.NEXT_PUBLIC_URL).hostname
+      : request.headers.get('host') || 'localhost';
+
+    let authenticatedFid: number;
+    
+    try {
+      // Verify the JWT token using Quick Auth
+      const payload = await client.verifyJwt({
+        token,
+        domain,
+      });
+      authenticatedFid = payload.sub;
+    } catch (e) {
+      if (e instanceof Errors.InvalidTokenError) {
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+      throw e;
+    }
+    
     const body = await request.json();
     const { fid, optionId } = body;
+    const { id } = await params;
+
+    // Verify that the provided FID matches the authenticated user
+    if (fid !== authenticatedFid) {
+      return NextResponse.json({ error: 'FID mismatch with authenticated user' }, { status: 403 });
+    }
 
     // Validate input
     if (!fid || !optionId) {
@@ -16,11 +54,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid poll ID" }, { status: 400 });
     }
 
-    const pollObjectId = new mongoose.Types.ObjectId(params.id);
+    const pollObjectId = new mongoose.Types.ObjectId(id);
 
     // Check if user has already voted on this poll
     const existingVote = await Vote.findOne({ pollId: pollObjectId, voterFid: fid });

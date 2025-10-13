@@ -2,6 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useQuickAuth } from "@/hooks/useQuickAuth";
+import Navbar from "./Navbar";
+
+interface UserProfile {
+  fid: number;
+  username: string | null;
+  displayName: string | null;
+  pfpUrl: string | null;
+  bio?: string;
+  followerCount?: number;
+  followingCount?: number;
+}
 
 interface UserStats {
   pollsCreated: number;
@@ -21,53 +33,59 @@ interface VotedPoll extends Poll {
 }
 
 export function ProfileView() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [myPolls, setMyPolls] = useState<Poll[]>([]);
   const [votedPolls, setVotedPolls] = useState<VotedPoll[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { authenticatedUser, getToken } = useQuickAuth();
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    setStats({
-      pollsCreated: 3,
-      pollsVoted: 12,
-      avgVotesPerPoll: 28,
-    });
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    setMyPolls([
-      {
-        id: "1",
-        question: "What is your favorite programming language?",
-        totalVotes: 42,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "3",
-        question: "Favorite web framework?",
-        totalVotes: 35,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+        const token = await getToken();
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        };
 
-    setVotedPolls([
-      {
-        id: "2",
-        question: "Best time to code?",
-        totalVotes: 28,
-        createdAt: new Date().toISOString(),
-        selectedOption: "Night",
-      },
-      {
-        id: "1",
-        question: "What is your favorite programming language?",
-        totalVotes: 42,
-        createdAt: new Date().toISOString(),
-        selectedOption: "TypeScript",
-      },
-    ]);
+        // Fetch profile and stats
+        const [profileRes, myPollsRes, votedPollsRes] = await Promise.all([
+          fetch('/api/users/profile', { headers }),
+          fetch('/api/users/my-polls', { headers }),
+          fetch('/api/users/my-votes', { headers }),
+        ]);
 
-    setLoading(false);
-  }, []);
+        if (!profileRes.ok || !myPollsRes.ok || !votedPollsRes.ok) {
+          throw new Error('Failed to fetch profile data');
+        }
+
+        const [profileData, myPollsData, votedPollsData] = await Promise.all([
+          profileRes.json(),
+          myPollsRes.json(),
+          votedPollsRes.json(),
+        ]);
+
+        setProfile(profileData.profile);
+        setStats(profileData.stats);
+        setMyPolls(myPollsData.polls);
+        setVotedPolls(votedPollsData.votedPolls);
+      } catch (err) {
+        console.error('Error fetching profile data:', err);
+        setError('Failed to load profile data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (authenticatedUser) {
+      fetchProfileData();
+    }
+  }, [authenticatedUser, getToken]);
 
   if (loading) {
     return (
@@ -79,27 +97,57 @@ export function ProfileView() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="border-4 border-black bg-red-300 px-8 py-4 font-mono text-xl font-bold uppercase text-black">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="border-b-4 border-black bg-white px-4 py-6">
-        <div className="mx-auto max-w-6xl">
-          <Link
-            href="/"
-            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
-          >
-            ← Back Home
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-6xl px-4 py-12">
+      <main className="mx-auto max-w-6xl px-4 py-12 pt-24">
         {/* Profile Header */}
         <div className="mb-12 border-4 border-black bg-orange-300 p-8">
-          <h1 className="mb-4 font-mono text-4xl font-black uppercase text-black">Your Profile</h1>
-          <div className="border-2 border-black bg-white px-3 py-2 font-mono text-lg font-bold text-black">
-            @fid1234
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              {/* Profile Picture */}
+              <div className="border-4 border-black bg-white p-2">
+                {profile?.pfpUrl ? (
+                  <img
+                    src={profile.pfpUrl}
+                    alt="Profile"
+                    className="h-20 w-20 border-2 border-black object-cover"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center border-2 border-black bg-gray-200">
+                    <span className="font-mono text-2xl font-black text-black">?</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* User Info */}
+              <div>
+                <h1 className="mb-2 font-mono text-4xl font-black uppercase text-black">
+                  {profile?.displayName || profile?.username || 'Anonymous User'}
+                </h1>
+                <div className="mb-2 border-2 border-black bg-white px-3 py-2 font-mono text-lg font-bold text-black">
+                  @{profile?.username || `fid${profile?.fid || 'unknown'}`}
+                </div>
+                {profile?.bio && (
+                  <div className="max-w-md border-2 border-black bg-yellow-100 px-3 py-2 font-mono text-sm text-black">
+                    {profile.bio}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -116,7 +164,7 @@ export function ProfileView() {
             </div>
             <div className="border-4 border-black bg-pink-300 p-6">
               <div className="mb-2 font-mono text-5xl font-black text-black">{stats.avgVotesPerPoll}</div>
-              <div className="font-mono text-lg font-bold uppercase text-black">Avg Votes/Poll</div>
+              <div className="font-mono text-lg font-bold uppercase text-black">Avg Votes Per Poll</div>
             </div>
           </div>
         )}

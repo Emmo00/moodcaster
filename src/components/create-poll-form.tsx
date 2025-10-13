@@ -5,6 +5,8 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuickAuth } from "@/hooks/useQuickAuth";
+import Navbar from "./Navbar";
 
 export function CreatePollForm() {
   const [question, setQuestion] = useState("");
@@ -12,6 +14,7 @@ export function CreatePollForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { authenticatedUser, getToken } = useQuickAuth();
 
   const addOption = () => {
     if (options.length < 4) {
@@ -35,6 +38,12 @@ export function CreatePollForm() {
     e.preventDefault();
     setError("");
 
+    // Check if user is authenticated
+    if (!authenticatedUser) {
+      setError("You must be signed in to create a poll");
+      return;
+    }
+
     // Validation
     if (!question.trim()) {
       setError("Question is required");
@@ -55,13 +64,24 @@ export function CreatePollForm() {
     setLoading(true);
 
     try {
+      // Get the authentication token
+      const token = await getToken();
+      if (!token) {
+        setError("Authentication token not found. Please sign in again.");
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("/api/polls", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           question: question.trim(),
           options: filledOptions,
-          fid: "1234", // Mock FID
+          fid: authenticatedUser.fid,
         }),
       });
 
@@ -69,7 +89,8 @@ export function CreatePollForm() {
         const data = await response.json();
         router.push(`/poll/${data.poll.id}`);
       } else {
-        setError("Failed to create poll");
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to create poll");
         setLoading(false);
       }
     } catch (err) {
@@ -84,19 +105,10 @@ export function CreatePollForm() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="border-b-4 border-black bg-white px-4 py-6">
-        <div className="mx-auto max-w-2xl">
-          <Link
-            href="/"
-            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
-          >
-            ← Back
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-2xl px-4 py-12">
+      <main className="mx-auto max-w-2xl px-4 py-12 pt-24">
         <div className="mb-8 border-4 border-black bg-orange-300 p-8">
           <h1 className="font-mono text-3xl font-black uppercase text-black">Create New Poll</h1>
         </div>

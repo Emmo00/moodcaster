@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import connectToDatabase from "@/lib/mongodb"
 import { Poll, User } from "@/models"
+import { createClient, Errors } from '@farcaster/quick-auth';
+
+const client = createClient();
 
 export async function GET() {
   try {
@@ -36,8 +39,42 @@ export async function POST(request: Request) {
   try {
     await connectToDatabase()
     
+    // Get and verify the authentication token
+    const authorization = request.headers.get('Authorization');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authorization token required' }, { status: 401 });
+    }
+
+    const token = authorization.split(' ')[1];
+    
+    // Get domain from environment or request
+    const domain = process.env.NEXT_PUBLIC_URL
+      ? new URL(process.env.NEXT_PUBLIC_URL).hostname
+      : request.headers.get('host') || 'localhost';
+
+    let authenticatedFid: number;
+    
+    try {
+      // Verify the JWT token using Quick Auth
+      const payload = await client.verifyJwt({
+        token,
+        domain,
+      });
+      authenticatedFid = payload.sub;
+    } catch (e) {
+      if (e instanceof Errors.InvalidTokenError) {
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+      throw e;
+    }
+    
     const body = await request.json()
     const { question, options, fid } = body
+
+    // Verify that the provided FID matches the authenticated user
+    if (fid !== authenticatedFid) {
+      return NextResponse.json({ error: 'FID mismatch with authenticated user' }, { status: 403 });
+    }
 
     // Validate input
     if (!question || !options || options.length < 2 || options.length > 4) {

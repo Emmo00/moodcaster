@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useQuickAuth } from "@/hooks/useQuickAuth"
+import Navbar from "./Navbar"
 
 interface PollOption {
   id: string
@@ -24,7 +26,9 @@ export function PollDetails({ pollId }: { pollId: string }) {
   const [voting, setVoting] = useState(false)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { authenticatedUser, getToken } = useQuickAuth()
 
   useEffect(() => {
     fetch(`/api/polls/${pollId}`)
@@ -42,23 +46,48 @@ export function PollDetails({ pollId }: { pollId: string }) {
   const handleVote = async (optionId: string) => {
     if (voting || hasVoted) return
 
+    // Check if user is authenticated
+    if (!authenticatedUser) {
+      setError("You must be signed in to vote");
+      return;
+    }
+
     setVoting(true)
     setSelectedOption(optionId)
+    setError(null)
 
     try {
+      // Get the authentication token
+      const token = await getToken();
+      if (!token) {
+        setError("Authentication token not found. Please sign in again.");
+        setVoting(false);
+        return;
+      }
+
       const response = await fetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fid: "1234", optionId }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          fid: authenticatedUser.fid, 
+          optionId 
+        }),
       })
 
       if (response.ok) {
         const data = await response.json()
         setPoll(data.poll)
         setHasVoted(true)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || "Failed to submit vote")
       }
     } catch (err) {
       console.error("[v0] Error voting:", err)
+      setError("An error occurred while voting")
     } finally {
       setVoting(false)
     }
@@ -95,19 +124,10 @@ export function PollDetails({ pollId }: { pollId: string }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="border-b-4 border-black bg-white px-4 py-6">
-        <div className="mx-auto max-w-3xl">
-          <Link
-            href="/"
-            className="inline-block border-4 border-black bg-gray-200 px-4 py-2 font-mono font-bold uppercase transition-transform hover:translate-x-1 hover:translate-y-1 text-black"
-          >
-            ← Back
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-3xl px-4 py-12">
+      <main className="mx-auto max-w-3xl px-4 py-12 pt-24">
         {/* Poll Question */}
         <div className="mb-8 border-4 border-black bg-orange-300 p-8">
           <h1 className="font-mono text-3xl font-black uppercase leading-tight text-black">{poll.question}</h1>
@@ -120,6 +140,13 @@ export function PollDetails({ pollId }: { pollId: string }) {
             </span>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 border-4 border-black bg-red-300 p-4">
+            <p className="font-mono font-bold text-black">{error}</p>
+          </div>
+        )}
 
         {/* Voting Options */}
         {!hasVoted && (

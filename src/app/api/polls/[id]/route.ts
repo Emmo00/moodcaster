@@ -3,17 +3,19 @@ import connectToDatabase from "@/lib/mongodb"
 import { Poll } from "@/models"
 import mongoose from "mongoose"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase()
     
+    const { id } = await params
+
     // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid poll ID" }, { status: 400 })
     }
 
-    const poll = await Poll.findById(params.id).lean()
-
+    const poll = await Poll.findById(id).lean()
+    
     if (!poll) {
       return NextResponse.json({ error: "Poll not found" }, { status: 404 })
     }
