@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Get user's created polls
     const polls = await Poll.find({ createdBy: fid })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean() as any[];
 
     const formattedPolls = polls.map(poll => {
       const totalVotes = poll.options?.reduce((sum: number, option: any) => sum + (option.votes || 0), 0) || 0;

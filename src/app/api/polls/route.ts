@@ -13,7 +13,7 @@ export async function GET() {
     const polls = await Poll.find({})
       .sort({ createdAt: -1 })
       .limit(50) // Limit to 50 most recent polls
-      .lean()
+      .lean() as any[]
     
     // Transform the data to match the expected format
     const transformedPolls = polls.map(poll => ({

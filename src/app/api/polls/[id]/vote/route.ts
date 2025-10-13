@@ -73,7 +73,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     // Find the option
-    const option = poll.options.find((o) => o.id === optionId);
+    const option = poll.options.find((o: any) => o.id === optionId);
     if (!option) {
       return NextResponse.json({ error: "Option not found" }, { status: 404 });
     }

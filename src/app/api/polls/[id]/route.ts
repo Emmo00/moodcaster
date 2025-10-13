@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Invalid poll ID" }, { status: 400 })
     }
 
-    const poll = await Poll.findById(id).lean()
+    const poll = await Poll.findById(id).lean() as any
     
     if (!poll) {
       return NextResponse.json({ error: "Poll not found" }, { status: 404 })

@@ -12,7 +12,7 @@ export class DatabaseService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean() as any[];
 
     const total = await Poll.countDocuments();
 
@@ -46,7 +46,7 @@ export class DatabaseService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean() as any[];
 
     const total = await Poll.countDocuments({ creatorFid });
 
@@ -81,7 +81,7 @@ export class DatabaseService {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean() as any[];
 
     const total = await Vote.countDocuments({ voterFid });
 
