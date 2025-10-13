@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@farcaster/quick-auth';
-import connectDB from '@/lib/database';
+import connectToDatabase from '@/lib/mongodb';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
 import User from '@/models/User';
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     const fid = payload.sub;
-    await connectDB();
+    await connectToDatabase();
 
     // Get user info from Neynar API
     let userProfile = null;
