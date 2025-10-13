@@ -1,7 +1,7 @@
 import { PollDetails } from "@/components/poll-details"
 import App from "../../app"
 
-export default async function PollPage({ params }: { params: { id: string } }) {
+export default async function PollPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return (
     <App title="Poll Details">

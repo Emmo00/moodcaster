@@ -10,7 +10,7 @@ interface AppProps {
 }
 
 export default function App({ title, children }: AppProps) {
-  const { authenticatedUser, status, signIn } = useQuickAuth();
+  const { status, signIn } = useQuickAuth();
 
   useEffect(() => {
     // Call ready to hide splash screen once the app is loaded

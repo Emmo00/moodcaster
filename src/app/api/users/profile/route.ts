@@ -3,7 +3,6 @@ import { createClient } from '@farcaster/quick-auth';
 import connectToDatabase from '@/lib/mongodb';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
-import User from '@/models/User';
 
 const client = createClient();
 

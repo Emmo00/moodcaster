@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuickAuth } from "@/hooks/useQuickAuth";
 import Navbar from "./Navbar";

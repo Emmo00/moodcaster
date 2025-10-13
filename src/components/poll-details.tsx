@@ -24,10 +24,10 @@ export function PollDetails({ pollId }: { pollId: string }) {
   const [poll, setPoll] = useState<Poll | null>(null)
   const [loading, setLoading] = useState(true)
   const [voting, setVoting] = useState(false)
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [_selectedOption, setSelectedOption] = useState<string | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const _router = useRouter()
   const { authenticatedUser, getToken } = useQuickAuth()
 
   useEffect(() => {

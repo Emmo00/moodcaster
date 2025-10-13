@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@farcaster/quick-auth';
 import connectToDatabase from '@/lib/mongodb';
-import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
 
 const client = createClient();

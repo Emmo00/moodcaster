@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuickAuth } from "@/hooks/useQuickAuth";
 
 export default function Navbar() {
-  const { authenticatedUser, signOut } = useQuickAuth();
+  const { authenticatedUser } = useQuickAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b-4 border-black bg-white">
