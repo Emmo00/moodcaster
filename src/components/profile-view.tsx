@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuickAuth } from "@/hooks/useQuickAuth";
+import { sdk } from "@farcaster/miniapp-sdk";
 import Navbar from "./Navbar";
 
 interface UserProfile {
@@ -33,13 +34,15 @@ interface VotedPoll extends Poll {
 }
 
 export function ProfileView() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [myPolls, setMyPolls] = useState<Poll[]>([]);
   const [votedPolls, setVotedPolls] = useState<VotedPoll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { authenticatedUser, getToken } = useQuickAuth();
+  
+  // Get user profile data from SDK context
+  const userContext = sdk.context.user;
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -53,25 +56,24 @@ export function ProfileView() {
           'Content-Type': 'application/json',
         };
 
-        // Fetch profile and stats
-        const [profileRes, myPollsRes, votedPollsRes] = await Promise.all([
+        // Fetch only stats and polls data - profile info comes from SDK context
+        const [statsRes, myPollsRes, votedPollsRes] = await Promise.all([
           fetch('/api/users/profile', { headers }),
           fetch('/api/users/my-polls', { headers }),
           fetch('/api/users/my-votes', { headers }),
         ]);
 
-        if (!profileRes.ok || !myPollsRes.ok || !votedPollsRes.ok) {
+        if (!statsRes.ok || !myPollsRes.ok || !votedPollsRes.ok) {
           throw new Error('Failed to fetch profile data');
         }
 
-        const [profileData, myPollsData, votedPollsData] = await Promise.all([
-          profileRes.json(),
+        const [statsData, myPollsData, votedPollsData] = await Promise.all([
+          statsRes.json(),
           myPollsRes.json(),
           votedPollsRes.json(),
         ]);
 
-        setProfile(profileData.profile);
-        setStats(profileData.stats);
+        setStats(statsData.stats);
         setMyPolls(myPollsData.polls);
         setVotedPolls(votedPollsData.votedPolls);
       } catch (err) {
@@ -120,9 +122,9 @@ export function ProfileView() {
             <div className="flex items-center gap-6">
               {/* Profile Picture */}
               <div className="border-4 border-black bg-white p-2">
-                {profile?.pfpUrl ? (
+                {userContext?.pfpUrl ? (
                   <img
-                    src={profile.pfpUrl}
+                    src={userContext.pfpUrl}
                     alt="Profile"
                     className="h-20 w-20 border-2 border-black object-cover"
                   />
@@ -136,16 +138,11 @@ export function ProfileView() {
               {/* User Info */}
               <div>
                 <h1 className="mb-2 font-mono text-4xl font-black uppercase text-black">
-                  {profile?.displayName || profile?.username || 'Anonymous User'}
+                  {userContext?.displayName || userContext?.username || 'Anonymous User'}
                 </h1>
                 <div className="mb-2 border-2 border-black bg-white px-3 py-2 font-mono text-lg font-bold text-black">
-                  @{profile?.username || `fid${profile?.fid || 'unknown'}`}
+                  @{userContext?.username || `fid${userContext?.fid || 'unknown'}`}
                 </div>
-                {profile?.bio && (
-                  <div className="max-w-md border-2 border-black bg-yellow-100 px-3 py-2 font-mono text-sm text-black">
-                    {profile.bio}
-                  </div>
-                )}
               </div>
             </div>
           </div>
