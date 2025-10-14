@@ -39,10 +39,38 @@ export function ProfileView() {
   const [votedPolls, setVotedPolls] = useState<VotedPoll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userContext, setUserContext] = useState<any>(null);
   const { authenticatedUser, getToken } = useQuickAuth();
-  
+
   // Get user profile data from SDK context
-  const userContext = sdk.context.user;
+  useEffect(() => {
+    const getUserContext = async () => {
+      try {
+        const context = await sdk.context;
+        setUserContext(context.user);
+      } catch (error) {
+        console.error('Failed to get user context:', error);
+      }
+    };
+
+    getUserContext();
+  }, []);
+
+  // Enable back navigation
+  useEffect(() => {
+    const enableBackNavigation = async () => {
+      try {
+        const capabilities = await sdk.getCapabilities();
+        if (capabilities.includes('back')) {
+          await sdk.back.enableWebNavigation();
+        }
+      } catch (error) {
+        console.error('Failed to enable back navigation:', error);
+      }
+    };
+
+    enableBackNavigation();
+  }, []);
 
   useEffect(() => {
     const fetchProfileData = async () => {
