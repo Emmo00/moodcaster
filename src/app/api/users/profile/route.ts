@@ -16,7 +16,7 @@ async function verifyToken(request: NextRequest) {
     const token = authorization.split(' ')[1];
     const payload = await client.verifyJwt({
       token,
-      domain: process.env.NEXT_PUBLIC_APP_URL?.replace('https://', '') || 'localhost:3001',
+      domain: process.env.NEXT_PUBLIC_URL?.replace('https://', '') || 'localhost:3000',
     });
     return payload;
   } catch (error) {
